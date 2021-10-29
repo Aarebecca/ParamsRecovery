@@ -7,8 +7,8 @@ import zipfile
 
 # 从压缩包中提取js文件
 def extract_js_file():
-    data_path = "../js代码"
-    out_path = "./code dataset"
+    data_path = "./source_zip"
+    out_path = "./extract"
     data_list = os.listdir(data_path)
 
     error_zip_list = []

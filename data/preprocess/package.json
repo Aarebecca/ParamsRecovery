@@ -1,0 +1,27 @@
+{
+  "name": "preprocess",
+  "version": "1.0.0",
+  "description": "Preprocess program for dealing with js source code",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest",
+    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__"
+  },
+  "author": "Aaron",
+  "license": "ISC",
+  "dependencies": {
+    "esprima": "^4.0.1",
+    "prettier": "^2.4.1",
+    "uglify-js": "^3.14.2"
+  },
+  "devDependencies": {
+    "@types/estree": "0.0.50",
+    "@types/jest": "^27.0.2",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.11.6",
+    "cross-env": "^7.0.3",
+    "jest": "^27.3.1",
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.4.4"
+  }
+}
