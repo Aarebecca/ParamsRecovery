@@ -1,4 +1,4 @@
-import { ast, extractParams } from "../../src";
+// import { AST, extractParams } from "../../src";
 
 describe("param", () => {
   it("extract params", () => {

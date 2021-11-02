@@ -1,4 +1,4 @@
-export { ast } from "ast";
-export { extractParams, matchParams } from "param";
-export { removeConfounding } from "remove_confounding";
+export { AST } from "ast";
+export { extractVariables } from "extract";
+export { isFunctionAvailable } from "drop";
 export { uglify } from "uglify";
