@@ -5,17 +5,19 @@
   "main": "index.ts",
   "scripts": {
     "test": "jest",
-    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__"
+    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__/unit/extract.spec.ts"
   },
   "author": "Aaron",
   "license": "ISC",
   "dependencies": {
-    "esprima": "^4.0.1",
+    "@antv/util": "^2.0.17",
+    "@babel/generator": "^7.16.0",
+    "@babel/parser": "^7.16.0",
     "prettier": "^2.4.1",
     "uglify-js": "^3.14.2"
   },
   "devDependencies": {
-    "@types/estree": "0.0.50",
+    "@babel/types": "^7.16.0",
     "@types/jest": "^27.0.2",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.6",

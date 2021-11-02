@@ -6,11 +6,11 @@ module.exports = {
   testRegex: "/__tests__/.*.spec\\.ts?$",
   collectCoverage: true,
   collectCoverageFrom: ["src/**/*.ts"],
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  moduleFileExtensions: ["ts", "js", "json", "node"],
   globals: {
     "ts-jest": {
       tsconfig: {
-        target: "ES2019",
+        target: "ESNext",
       },
     },
   },
