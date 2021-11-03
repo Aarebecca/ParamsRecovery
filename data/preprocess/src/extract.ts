@@ -1,4 +1,4 @@
-import { isNull, set } from "@antv/util";
+import { isArray, isNull, isObject, isString, keys, set } from "@antv/util";
 /**
  * 从函数中提取参数
  */
@@ -11,7 +11,6 @@ import type {
   ObjectPattern,
   LVal,
 } from "@babel/types";
-
 /**
  * 从 ast 函数中提取出变量声明
  */
@@ -26,13 +25,51 @@ export function extractVariables(f: FunctionNode) {
   ) as VariableDeclaration[];
 }
 
+/**
+ * 提取出变量名并保持解构的格式
+ */
 export function extractVariableNames(f: FunctionNode): any[] {
   const variables = extractVariables(f);
   return variables.map(({ declarations }) => {
     return declarations.map(({ id }) => {
-      return extractPattern(id);
+      return extractIdentifierRestElementPattern(id);
     });
   });
+}
+
+/**
+ * 提取出变量名以数组的形式返回
+ */
+export function extractVariableNamesList(f: FunctionNode): string[] {
+  const variableNames = extractVariableNames(f);
+  const list: string[] = [];
+
+  function parse(n: Array<any> | AnyObject<string | Object>) {
+    if (isArray(n)) {
+      n.forEach((item) => {
+        parse(item);
+      });
+    } else if (isObject(n)) {
+      keys(n).forEach((key: string) => {
+        const val = n[key];
+        if (isString(val)) {
+          val === "Identifier" && list.push(key);
+          val === "RestElement" && list.push(`...${key}`);
+        } else {
+          parse(val as AnyObject<Object>);
+        }
+      });
+    } else if (isString(n)) {
+      list.push(n);
+    }
+  }
+
+  variableNames.forEach((names) => {
+    names.forEach((name: any) => {
+      parse(name);
+    });
+  });
+  return list;
 }
 
 /**
@@ -40,13 +77,46 @@ export function extractVariableNames(f: FunctionNode): any[] {
  */
 export function extractArgumentNames(f: FunctionNode): any[] {
   const { params } = f;
-  return params.map(extractPattern);
+  return params.map(extractIdentifierRestElementPattern);
 }
 
 /**
- * Recursive access Pattern
+ * 提取出参数名以数组的形式返回
  */
-export function extractPattern(pattern: LVal): any {
+export function extractArgumentNamesList(f: FunctionNode): string[] {
+  const argumentNames = extractArgumentNames(f);
+  const list: string[] = [];
+
+  function parse(n: Array<any> | AnyObject<string | Object>) {
+    if (isArray(n)) {
+      n.forEach((item) => {
+        parse(item);
+      });
+    } else if (isObject(n)) {
+      keys(n).forEach((key: string) => {
+        const val = n[key];
+        if (isString(val)) {
+          val === "Identifier" && list.push(key);
+          val === "RestElement" && list.push(`...${key}`);
+        } else {
+          parse(val as AnyObject<Object>);
+        }
+      });
+    } else if (isString(n)) {
+      list.push(n);
+    }
+  }
+
+  argumentNames.forEach((n) => {
+    parse(n);
+  });
+  return list;
+}
+
+/**
+ * 解析 Identifier | RestElement | Pattern 结构
+ */
+export function extractIdentifierRestElementPattern(pattern: LVal): any {
   function objDFS(p: ObjectPattern, path: any[]) {
     p.properties.forEach((node) => {
       const { type } = node;
@@ -122,7 +192,14 @@ export function extractPattern(pattern: LVal): any {
     objDFS(pattern, []);
   } else if (pattern.type === "Identifier") {
     return pattern.name;
+  } else if (pattern.type === "RestElement") {
+    return `...${(pattern.argument as Identifier).name}`;
   }
+  // else if (pattern.type === "AssignmentPattern") {
+  //   return (pattern.right as Identifier).name;
+  // } else {
+  //   return pattern;
+  // }
 
   return result;
 }

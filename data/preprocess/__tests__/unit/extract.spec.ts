@@ -1,9 +1,11 @@
 import { parse } from "@babel/parser";
 import {
-  extractPattern,
+  extractIdentifierRestElementPattern,
   extractVariables,
   extractVariableNames,
+  extractVariableNamesList,
   extractArgumentNames,
+  extractArgumentNamesList,
 } from "../../src/extract";
 import { AST } from "../../src/ast";
 
@@ -12,7 +14,7 @@ describe("Extract", () => {
     const ast = parse(`function a(){ let i = 10 }`);
     // @ts-ignore
     const pattern = ast.program.body[0].body.body[0].declarations[0].id;
-    expect(extractPattern(pattern)).toEqual("i");
+    expect(extractIdentifierRestElementPattern(pattern)).toEqual("i");
   });
 
   it("extractObjectPattern", () => {
@@ -21,7 +23,7 @@ describe("Extract", () => {
     );
     // @ts-ignore
     const pattern = ast.program.body[0].body.body[0].declarations[0].id;
-    expect(extractPattern(pattern)).toStrictEqual({
+    expect(extractIdentifierRestElementPattern(pattern)).toStrictEqual({
       a: "Identifier",
       b: { c: "Identifier" },
       d: { e: { F: ["g", "h", "i"] } },
@@ -35,7 +37,7 @@ describe("Extract", () => {
     `);
     // @ts-ignore
     const pattern = ast.program.body[0].body.body[0].declarations[0].id;
-    expect(extractPattern(pattern)).toStrictEqual([
+    expect(extractIdentifierRestElementPattern(pattern)).toStrictEqual([
       ,
       "b",
       ["c"],
@@ -62,14 +64,63 @@ describe("Extract", () => {
     expect(v2).toStrictEqual([{ j: "Identifier", k: { l: "Identifier" } }]);
   });
 
-  it("availableFunctions", () => {
-    const { availableFunctions } = new AST(`
+  it("extractVariableNamesList", () => {
+    const { functions } = new AST(`
     function a(z){ 
-      let [, b=1,...rest] = obj;
+      let [, b=1,...rest1] = obj;
       let i = 2;
-      let {j, k: {l}} = obj;
+      let {j, k: {l, ...rest2}} = obj;
     }
     `);
-    console.log(availableFunctions);
+    const variableNamesList = extractVariableNamesList(functions[0]);
+    expect(variableNamesList).toStrictEqual([
+      "b",
+      "...rest1",
+      "i",
+      "j",
+      "l",
+      "...rest2",
+    ]);
   });
+
+  it("extractArgumentNames", () => {
+    const { functions } = new AST(
+      `function a(b, [, c, ...rest0], {d, ...rest1}, ...rest2){ }`
+    );
+    const argumentNames = extractArgumentNames(functions[0]);
+    expect(argumentNames.length).toStrictEqual(4);
+    expect(argumentNames[0]).toStrictEqual("b");
+    expect(argumentNames[1]).toStrictEqual([, "c", "...rest0"]);
+    expect(argumentNames[2]).toStrictEqual({
+      d: "Identifier",
+      rest1: "RestElement",
+    });
+    expect(argumentNames[3]).toStrictEqual("...rest2");
+  });
+
+  it("extractArgumentNamesList", () => {
+    const { functions } = new AST(
+      `function a(b, [, c, ...rest0], {d, ...rest1}, ...rest2){ }`
+    );
+    const argumentNamesList = extractArgumentNamesList(functions[0]);
+    expect(argumentNamesList).toStrictEqual([
+      "b",
+      "c",
+      "...rest0",
+      "d",
+      "...rest1",
+      "...rest2",
+    ]);
+  });
+
+  // it("availableFunctions", () => {
+  //   const { availableFunctions } = new AST(`
+  //   function a(z){
+  //     let [, b=1,...rest] = obj;
+  //     let i = 2;
+  //     let {j, k: {l}} = obj;
+  //   }
+  //   `);
+  //   console.log(availableFunctions);
+  // });
 });
