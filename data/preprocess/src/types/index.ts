@@ -9,4 +9,4 @@ export type FunctionNode =
   | FunctionExpression
   | ArrowFunctionExpression;
 
-export type AnyObject = { [key: string]: any };
+export type AnyObject<T = string> = { [key: string]: T };

@@ -1,4 +1,4 @@
-export { AST } from "ast";
-export { extractVariables } from "extract";
-export { isFunctionAvailable } from "drop";
-export { uglify } from "uglify";
+export * from "./ast";
+export * from "./drop";
+export * from "./extract";
+export * from "./uglify";
