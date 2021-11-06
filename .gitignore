@@ -2,7 +2,3 @@ data/extract
 data/source_zip
 data/error_list.txt
 data/exists_list.txt
-**/*/node_modules/
-**/*/coverage
-**/*/package-lock.json
-**/*/yarn.lock

@@ -5,7 +5,11 @@
   "main": "index.ts",
   "scripts": {
     "test": "jest",
-    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__/unit/extract.spec.ts"
+    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__/unit/ast.spec.ts",
+    "exec": "node build/src/index.js",
+    "clean": "rimraf build && mkdir build",
+    "build-babel": "babel -d ./build ./src/index.ts -s",
+    "build": "npm run clean && tsc"
   },
   "author": "Aaron",
   "license": "ISC",
@@ -13,16 +17,19 @@
     "@antv/util": "^2.0.17",
     "@babel/generator": "^7.16.0",
     "@babel/parser": "^7.16.0",
+    "@babel/traverse": "^7.16.0",
+    "lodash": "^4.17.21",
     "prettier": "^2.4.1",
     "uglify-js": "^3.14.2"
   },
   "devDependencies": {
     "@babel/types": "^7.16.0",
+    "@types/lodash": "^4.14.176",
     "@types/jest": "^27.0.2",
-    "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.6",
     "cross-env": "^7.0.3",
     "jest": "^27.3.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^27.0.7",
     "typescript": "^4.4.4"
   }
