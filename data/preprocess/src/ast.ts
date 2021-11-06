@@ -1,7 +1,11 @@
+import _ from "lodash";
 import generate from "@babel/generator";
-import { each, isObject } from "@antv/util";
+import { each, isObject, isString } from "@antv/util";
+import { extractArgumentNamesList, extractVariableNamesList } from "./extract";
 import { isFunctionAvailable } from "./drop";
 import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
+import { comparer } from "./utils";
 /**
  * 抽象语法树 ast 的解析及函数定义提取
  */
@@ -15,10 +19,12 @@ import type {
 } from "@babel/types";
 
 export class AST {
-  public ast: AST_TYPE;
+  public raw: string;
+  public ast!: AST_TYPE;
 
   constructor(code: string | AST_TYPE) {
-    this.ast = typeof code === "string" ? AST.parse(code) : code;
+    this.raw = isString(code) ? code : AST.generate(code);
+    this.reload(code);
   }
 
   /**
@@ -32,8 +38,15 @@ export class AST {
     }
   }
 
-  public static generate(code: AST_TYPE) {
+  public static generate(code: Node) {
     return generate(code).code;
+  }
+
+  /**
+   * code string
+   */
+  public get code() {
+    return generate(this.ast);
   }
 
   /**
@@ -87,5 +100,42 @@ export class AST {
    */
   public get availableFunctions() {
     return this.functions.filter(isFunctionAvailable);
+  }
+
+  /**
+   * 代码规范化
+   */
+  public get normalizeFunctionsIdentifier() {
+    /**
+     * 1. 命名使用驼峰法
+     * 2. 统一放置变量定义
+     */
+    const { availableFunctions: functions } = this;
+    return functions.map((func) => {
+      const list = [
+        ...extractArgumentNamesList(func),
+        ...extractVariableNamesList(func),
+      ];
+
+      const f = AST.parse(AST.generate(func));
+      traverse(f, {
+        Identifier(path) {
+          const { node } = path;
+          const cpr = comparer(node.name);
+          if (cpr.in(list)) {
+            node.name = _.camelCase(cpr.val);
+          }
+        },
+      });
+
+      return f.program.body[0] as FunctionNode;
+    });
+  }
+
+  /**
+   * 重新载入 this.ast
+   */
+  private reload(code: string | AST_TYPE) {
+    this.ast = typeof code === "string" ? AST.parse(code) : code;
   }
 }
