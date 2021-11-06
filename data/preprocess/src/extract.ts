@@ -1,4 +1,4 @@
-import { isArray, isNull, isObject, isString, keys, set } from "@antv/util";
+import { isArray, isNull, isObject, isString, keys, set } from '@antv/util';
 /**
  * 从函数中提取参数
  */
@@ -10,6 +10,7 @@ import type {
   ArrayPattern,
   ObjectPattern,
   LVal,
+  AssignmentPattern,
 } from "@babel/types";
 /**
  * 从 ast 函数中提取出变量声明
@@ -97,6 +98,10 @@ export function extractArgumentNamesList(f: FunctionNode): string[] {
         const val = n[key];
         if (isString(val)) {
           val === "Identifier" && list.push(key);
+          val === "AssignmentPattern" &&
+            list.push(
+              ((val as unknown as AssignmentPattern).left as Identifier).name
+            );
           val === "RestElement" && list.push(`...${key}`);
         } else {
           parse(val as AnyObject<Object>);
@@ -141,15 +146,10 @@ export function extractIdentifierRestElementPattern(pattern: LVal): any {
         set(result, newPath, []);
         arrDFS(child, newPath);
       } else if (node.value.type === "AssignmentPattern") {
-        console.log(node.value.right);
-
         set(
           result,
           [...path, (node.value.left as Identifier).name],
           "Assignment"
-          /** Literal 类型太多了，暂时不考虑取值
-           *  (node.value.right as Literal).name
-           */
         );
       }
     });
@@ -194,10 +194,10 @@ export function extractIdentifierRestElementPattern(pattern: LVal): any {
     return pattern.name;
   } else if (pattern.type === "RestElement") {
     return `...${(pattern.argument as Identifier).name}`;
+  } else if (pattern.type === "AssignmentPattern") {
+    return (pattern.left as Identifier).name;
   }
-  // else if (pattern.type === "AssignmentPattern") {
-  //   return (pattern.right as Identifier).name;
-  // } else {
+  // else {
   //   return pattern;
   // }
 

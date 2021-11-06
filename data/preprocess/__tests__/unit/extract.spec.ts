@@ -33,12 +33,13 @@ describe("Extract", () => {
 
   it("extractArrayPattern", () => {
     const ast = parse(`
-    function a(z){ let [, b=1, [c], {d: [f, {h}]},...rest] = obj;}
+    function a(z){ let [, b0, b=1, [c], {d: [f, {h}]},...rest] = obj;}
     `);
     // @ts-ignore
     const pattern = ast.program.body[0].body.body[0].declarations[0].id;
     expect(extractIdentifierRestElementPattern(pattern)).toStrictEqual([
       ,
+      "b0",
       "b",
       ["c"],
       { d: ["f", { h: "Identifier" }] },
@@ -85,26 +86,28 @@ describe("Extract", () => {
 
   it("extractArgumentNames", () => {
     const { functions } = new AST(
-      `function a(b, [, c, ...rest0], {d, ...rest1}, ...rest2){ }`
+      `function a(b, b1=1, [, c, ...rest0], {d, ...rest1}, ...rest2){ }`
     );
     const argumentNames = extractArgumentNames(functions[0]);
-    expect(argumentNames.length).toStrictEqual(4);
+    expect(argumentNames.length).toStrictEqual(5);
     expect(argumentNames[0]).toStrictEqual("b");
-    expect(argumentNames[1]).toStrictEqual([, "c", "...rest0"]);
-    expect(argumentNames[2]).toStrictEqual({
+    expect(argumentNames[1]).toStrictEqual("b1");
+    expect(argumentNames[2]).toStrictEqual([, "c", "...rest0"]);
+    expect(argumentNames[3]).toStrictEqual({
       d: "Identifier",
       rest1: "RestElement",
     });
-    expect(argumentNames[3]).toStrictEqual("...rest2");
+    expect(argumentNames[4]).toStrictEqual("...rest2");
   });
 
   it("extractArgumentNamesList", () => {
     const { functions } = new AST(
-      `function a(b, [, c, ...rest0], {d, ...rest1}, ...rest2){ }`
+      `function a(b , b1 = 1, [, c, ...rest0], {d, ...rest1}, ...rest2){ }`
     );
     const argumentNamesList = extractArgumentNamesList(functions[0]);
     expect(argumentNamesList).toStrictEqual([
       "b",
+      "b1",
       "c",
       "...rest0",
       "d",
@@ -112,15 +115,4 @@ describe("Extract", () => {
       "...rest2",
     ]);
   });
-
-  // it("availableFunctions", () => {
-  //   const { availableFunctions } = new AST(`
-  //   function a(z){
-  //     let [, b=1,...rest] = obj;
-  //     let i = 2;
-  //     let {j, k: {l}} = obj;
-  //   }
-  //   `);
-  //   console.log(availableFunctions);
-  // });
 });
