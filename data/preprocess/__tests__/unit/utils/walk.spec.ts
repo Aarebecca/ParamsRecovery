@@ -1,4 +1,4 @@
-import { walk } from "../../../src/utils/walk";
+import { walk } from "../../../src/utils";
 
 describe("walk", () => {
   it("default", (done) => {

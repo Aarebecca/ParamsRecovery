@@ -2,6 +2,6 @@
 
 describe("param", () => {
   it("extract params", () => {
-    const code
+    // const code
   });
 });
