@@ -8,7 +8,6 @@
     "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__/unit/ast.spec.ts",
     "exec": "node build/src/index.js",
     "clean": "rimraf build && mkdir build",
-    "build-babel": "babel -d ./build ./src/index.ts -s",
     "build": "npm run clean && tsc"
   },
   "author": "Aaron",
