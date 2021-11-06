@@ -19,7 +19,9 @@ export function isConfounding(
   const variableNamesList = extractVariableNamesList(f);
   const argumentNamesList = extractArgumentNamesList(f);
   const list = [...argumentNamesList, ...variableNamesList];
-
+  if (list.length === 0) {
+    return true;
+  }
   return list.filter((v) => {
     return (v.slice(0, 3) === "..." ? v.slice(3) : v).length >= minLen;
   }).length >=
