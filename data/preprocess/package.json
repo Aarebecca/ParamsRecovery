@@ -5,10 +5,12 @@
   "main": "index.ts",
   "scripts": {
     "test": "jest",
-    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__/unit/ast.spec.ts",
-    "exec": "node build/src/index.js",
-    "clean": "rimraf build && mkdir build",
-    "build": "npm run clean && tsc"
+    "test-live": "cross-env DEBUG_MODE=1 jest --watch ./__tests__/unit/utils/walk.spec.ts",
+    "build": "npm run clean && tsc",
+    "exec": "node --expose-gc --max-old-space-size=20480 build/src/index.js",
+    "launch": "npm run build && npm run exec",
+    "launch-test": "npm run launch ../__test_data__/input ../__test_data__/output/dataset.json",
+    "clean": "rimraf build && mkdir build"
   },
   "author": "Aaron",
   "license": "ISC",
