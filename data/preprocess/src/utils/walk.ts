@@ -1,4 +1,5 @@
 import * as fs from "fs";
+const path = require("path");
 
 /**
  * 递归遍历文件夹里的文件
@@ -6,25 +7,36 @@ import * as fs from "fs";
  */
 export function walk(
   dir: string,
-  callback: (path: string, stat: fs.Stats) => void | Promise<any>
+  callback: (file: string) => void | Promise<void>
 ) {
-  fs.readdir(dir, (err, files) => {
-    if (err) {
-      throw err;
-    }
-
-    files.forEach((file) => {
-      const path = dir + "/" + file;
-      fs.stat(path, (err, stat) => {
-        if (err) {
-          throw err;
-        }
-
-        if (stat.isDirectory()) {
-          walk(path, callback);
-        } else {
-          callback(path, stat);
-        }
+  return new Promise<void>((resolve, reject) => {
+    fs.readdir(dir, (error, files) => {
+      if (error) {
+        return reject(error);
+      }
+      Promise.all(
+        files.map((file) => {
+          return new Promise<void>((resolve, reject) => {
+            const filepath = path.join(dir, file);
+            fs.stat(filepath, (error, stats) => {
+              if (error) {
+                return reject(error);
+              }
+              if (stats.isDirectory()) {
+                walk(filepath, callback).then(resolve);
+              } else if (stats.isFile()) {
+                const result = callback(filepath);
+                if (!result) {
+                  resolve();
+                } else {
+                  result.then(resolve);
+                }
+              }
+            });
+          });
+        })
+      ).then(() => {
+        resolve();
       });
     });
   });
