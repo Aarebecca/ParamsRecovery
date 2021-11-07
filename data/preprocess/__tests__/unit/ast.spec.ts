@@ -11,6 +11,9 @@ describe("ast", () => {
   let ast: AST;
 
   const code = `
+    'use strict'
+    const zeroEks = require('../')
+    const { join } = require('path')
     function a(z) {
       let b = function () {
         let c = 1;
@@ -48,6 +51,31 @@ describe("ast", () => {
 
     expect((f3 as FunctionExpression).type).toBe("FunctionExpression");
     expect((f4 as FunctionDeclaration).type).toBe("FunctionDeclaration");
+  });
+
+  it("functions2", () => {
+    ast = new AST(`
+    // 1
+    function a(){};
+    // 2
+    function b(param){};
+    // 3
+    (function c(){})();
+    // 4
+    () =>{ };
+    // 5
+    d = ()=>{ };
+    // 6
+    e = (param) => retVal;
+    // 7
+    (()=>{})()
+    // 8
+    new Function('{return 0}')
+    // 9
+    new Function('a', 'b', '{return a+b}')
+    `);
+    const { functions } = ast;
+    expect(functions.length).toBe(9);
   });
 
   it("availableFunctions", () => {
@@ -131,7 +159,6 @@ describe("ast", () => {
 
     const af0 = extractArgumentNamesList(f0);
     const vf0 = extractVariableNamesList(f0);
-    console.log(AST.generate(f0));
 
     expect(af0).toStrictEqual(["paraMeter"]);
     expect(vf0).toStrictEqual([

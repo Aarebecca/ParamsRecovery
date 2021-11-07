@@ -34,7 +34,15 @@ export class AST {
     try {
       return parse(code);
     } catch (es) {
-      throw new Error(`parse error: ${es}`);
+      // try parse as module
+      try {
+        return parse(code, {
+          sourceType: "module",
+          plugins: ["jsx", "flow"],
+        });
+      } catch (em) {
+        throw new Error(`parse error: ${em}`);
+      }
     }
   }
 
