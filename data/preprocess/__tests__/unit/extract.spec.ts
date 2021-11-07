@@ -48,7 +48,7 @@ describe("Extract", () => {
   });
 
   it("extractVariables", () => {
-    const { functions } = new AST(`
+    let { functions } = new AST(`
     function a(z){ 
       let [, b=1,...rest] = obj;
       let i = 2;
@@ -56,9 +56,39 @@ describe("Extract", () => {
     }
     `);
     expect(extractVariables(functions[0]).length).toBe(3);
-    const names = extractVariableNames(functions[0]);
+    let names = extractVariableNames(functions[0]);
     expect(names.length).toBe(3);
-    const [v0, v1, v2] = names;
+    let [v0, v1, v2] = names;
+
+    expect(v0).toStrictEqual([[, "b", "...rest"]]);
+    expect(v1).toStrictEqual(["i"]);
+    expect(v2).toStrictEqual([{ j: "Identifier", k: { l: "Identifier" } }]);
+
+    functions = new AST(`
+    const a = (z) => { 
+      let [, b=1,...rest] = obj;
+      let i = 2;
+      let {j, k: {l}} = obj;
+    }
+    `).functions;
+
+    expect(extractVariables(functions[0]).length).toBe(3);
+    names = extractVariableNames(functions[0]);
+    expect(names.length).toBe(3);
+    [v0, v1, v2] = names;
+
+    expect(v0).toStrictEqual([[, "b", "...rest"]]);
+    expect(v1).toStrictEqual(["i"]);
+    expect(v2).toStrictEqual([{ j: "Identifier", k: { l: "Identifier" } }]);
+
+    functions = new AST(`
+      a = new Function('{let [, b=1,...rest] = obj;let i = 2;let {j, k: {l}} = obj;}')
+    `).functions;
+
+    expect(extractVariables(functions[0]).length).toBe(3);
+    names = extractVariableNames(functions[0]);
+    expect(names.length).toBe(3);
+    [v0, v1, v2] = names;
 
     expect(v0).toStrictEqual([[, "b", "...rest"]]);
     expect(v1).toStrictEqual(["i"]);

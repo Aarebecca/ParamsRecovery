@@ -1,3 +1,4 @@
+import traverse from '@babel/traverse';
 import { isArray, isNull, isObject, isString, keys, set } from '@antv/util';
 /**
  * 从函数中提取参数
@@ -15,15 +16,16 @@ import type {
 /**
  * 从 ast 函数中提取出变量声明
  */
-export function extractVariables(f: FunctionNode) {
-  const {
-    body: { body },
-  } = f as {
-    body: BlockStatement;
-  };
-  return body.filter(
-    (node) => node.type === "VariableDeclaration"
-  ) as VariableDeclaration[];
+export function extractVariables(f: FunctionNode): VariableDeclaration[] {
+  const variables: VariableDeclaration[] = [];
+  // const ast = AST.parse(AST.generate(f));
+  traverse(f, {
+    noScope: true,
+    VariableDeclaration({ node }) {
+      variables.push(node);
+    },
+  });
+  return variables;
 }
 
 /**
