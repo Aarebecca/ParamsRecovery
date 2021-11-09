@@ -1,11 +1,11 @@
-import _ from "lodash";
-import generate from "@babel/generator";
-import { each, isObject, isString } from "@antv/util";
-import { extractArgumentNamesList, extractVariableNamesList } from "./extract";
-import { isFunctionAvailable } from "./drop";
-import { parse } from "@babel/parser";
-import traverse from "@babel/traverse";
-import { comparer } from "./utils";
+import _ from 'lodash';
+import generate from '@babel/generator';
+import traverse from '@babel/traverse';
+import { comparer } from './utils';
+import { each, isObject, isString } from '@antv/util';
+import { extractArgumentNamesList, extractVariableNamesList } from './extract';
+import { isFunctionAvailable } from './drop';
+import { parse } from '@babel/parser';
 /**
  * 抽象语法树 ast 的解析及函数定义提取
  */
