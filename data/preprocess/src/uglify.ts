@@ -4,6 +4,8 @@ import path from "path";
 import colors from "colors";
 import UglifyJS from "uglify-js";
 import { exit } from "process";
+import { ts2js } from "./utils";
+import { isNull, isUndefined } from "lodash";
 
 export function uglify(code: string) {
   return UglifyJS.minify(code).code;
@@ -23,10 +25,45 @@ export function createDataset() {
     ) as string[];
     const raw: string[] = [];
     const minify: string[] = [];
-    source.forEach((code: string) => {
-      if (code.length < 1500 && code.length > 50) {
-        raw.push(code);
-        minify.push(uglify(code));
+    source.forEach((rawCode: string) => {
+      let codeState1 = rawCode;
+      // 对于 ArrayFunction 如果没有命名的话，会导致解析错误
+      if (codeState1[0] === "(") {
+        codeState1 = `const f = ${codeState1}`;
+      }
+      // 未命名的 FunctionDeclaration 需要指定名称
+
+
+      const ts = ts2js(codeState1);
+      if (!isNull(ts)) {
+        let codeState2 = ts.code;
+        /**
+         * 排除：
+         *  1. 超长的代码
+         *  2. 短代码
+         *  3. 单元测试代码
+         */
+        if (
+          // 非空
+          !isUndefined(codeState2) &&
+          !isNull(codeState2) &&
+          // 长度
+          codeState2.length < 1500 &&
+          codeState2.length > 50 &&
+          // 不是单元测试代码
+          !codeState2.includes(" describe(") &&
+          !codeState2.includes(" it(") &&
+          !codeState2.includes(" expect(") &&
+          !codeState2.includes(".toBe(") &&
+          !codeState2.includes(".toEqual(")
+        ) {
+          const minifyCode = uglify(codeState2);
+
+          if (!isNull(minifyCode) || minifyCode !== "") {
+            raw.push(codeState2);
+            minify.push();
+          }
+        }
       }
     });
     writeFileSync(
