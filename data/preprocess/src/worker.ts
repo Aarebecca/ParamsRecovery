@@ -1,12 +1,14 @@
+import colors from "colors";
+import path from "path";
 import { AST } from "./ast";
 import { exit } from "process";
 import { parentPort, workerData } from "worker_threads";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { walk } from "./utils/walk";
 
-const { id, input } = workerData;
+const { id, input, output } = workerData;
 const dataset: string[] = [];
-console.log(`进程启动: ${id}`);
+console.log(colors.blue(`进程启动: ${id}`));
 
 Promise.all(
   input.map((folder: string) => {
@@ -24,8 +26,24 @@ Promise.all(
     });
   })
 ).then(() => {
-  console.log(`进程结束: ${id}`);
-
-  parentPort?.postMessage(dataset);
+  try {
+    writeFileSync(output, JSON.stringify(dataset));
+    parentPort?.postMessage({
+      id,
+      status: "success",
+    });
+  } catch (e) {
+    console.log(
+      colors.red(`Error Writing: ${id}\n`),
+      colors.gray(`输出路径: ${output}\n`),
+      colors.gray(`目标来源: ${input}\n`),
+      colors.gray(`错误信息: ${e}`)
+    );
+    parentPort?.postMessage({
+      id,
+      status: "error",
+    });
+  }
+  console.log(colors.gray(`进程退出: ${id}`));
   exit();
 });
