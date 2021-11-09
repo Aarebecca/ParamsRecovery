@@ -1,5 +1,6 @@
 import os
 import json
+import wget
 import random
 import requests
 from contextlib import closing
@@ -10,7 +11,7 @@ exists_list = []
 
 
 def d(url, branch, filepath):
-    headers_list = [
+    headers = {'User-Agent': random.choice([
         'Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)',
         'Mozilla/5.0 (compatible; MSIE 10.0; Macintosh; Intel Mac OS X 10_7_3; Trident/6.0)',
         'Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; GTB7.4; InfoPath.2; SV1; .NET CLR 3.3.69573; WOW64; en-US)',
@@ -21,20 +22,14 @@ def d(url, branch, filepath):
         'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1',
         'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:15.0) Gecko/20100101 Firefox/15.0.1',
         'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25',
-    ]
-
-    headers = {'User-Agent': random.choice(headers_list)}
+    ])}
     f_path, f_name = os.path.split(filepath)
     print(f"{f_name}-{branch} start...")
 
-    # download file from url
-    with closing(requests.get(f"{url}{branch}.zip", stream=True, headers=headers)) as r:
-        r.raise_for_status()
-        with open(filepath, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
-            print(f"{f_name}-{branch} done!")
+    print(f"{url}{branch}.zip")
+    exit()
+
+    wget.download(f"{url}{branch}.zip", filepath)
 
 
 def download(url, filepath):

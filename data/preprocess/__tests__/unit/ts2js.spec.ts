@@ -7,10 +7,11 @@ describe("ts2js", () => {
     `const a: number = 1;`,
     `const a = 1 as number;`,
     `function a(p, q) {}`,
-    `function (p, q) {}`,
+    // `function (p, q) {}`,
     `function a(p: number, q: string): string[] {}`,
     `function a(p: number, q: string): string[] { return []; }`,
     `(p, q) => {}`,
+    `p => {}`,
     `const a = (p, q) => {}`,
     `const a = (p: number, q: string): string[] => {}`,
   ];
