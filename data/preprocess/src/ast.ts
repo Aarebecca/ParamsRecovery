@@ -1,11 +1,11 @@
-import _ from 'lodash';
-import generate from '@babel/generator';
-import traverse from '@babel/traverse';
-import { comparer } from './utils';
-import { each, isObject, isString } from '@antv/util';
-import { extractArgumentNamesList, extractVariableNamesList } from './extract';
-import { isFunctionAvailable } from './drop';
-import { parse } from '@babel/parser';
+import _ from "lodash";
+import generate from "@babel/generator";
+import traverse from "@babel/traverse";
+import { comparer } from "./utils";
+import { each, isObject, isString } from "@antv/util";
+import { extractArgumentNamesList, extractVariableNamesList } from "./extract";
+import { isFunctionAvailable } from "./drop";
+import { parse } from "@babel/parser";
 /**
  * 抽象语法树 ast 的解析及函数定义提取
  */
@@ -46,8 +46,8 @@ export class AST {
     }
   }
 
-  public static generate(code: Node) {
-    return generate(code).code;
+  public static generate(code: Node, options = {}) {
+    return generate(code, options).code;
   }
 
   /**

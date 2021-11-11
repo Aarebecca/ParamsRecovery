@@ -6,7 +6,7 @@ import UglifyJS from "uglify-js";
 import { exit } from "process";
 import { ts2js } from "./utils";
 import { isNull, isUndefined } from "lodash";
-
+import { AST } from "./ast";
 export function uglify(code: string) {
   return UglifyJS.minify(code).code;
 }
@@ -17,6 +17,7 @@ export function uglify(code: string) {
  * 1. 给箭头函数补充命名，避免解析错误，如：
  *  * () => {}
  *  * p => {}
+ *  * async () => {}
  * 2. 给匿名函数补充命名，如
  *  * function() {}
  *  * function (p) {}
@@ -32,7 +33,10 @@ export function preprocess(_code: string) {
     return `const f = ${match}`;
   });
   // 匿名函数指定名称
-  code = code.replace(/function[ ]*\(/g, "function f(");
+  code = code.replace(/^function[ ]*\(/g, "function f(");
+  // 异步函数指定名称
+  code = code.replace(/async[ ]*\(/g, "async function f(");
+
   return code;
 }
 
@@ -50,38 +54,52 @@ export function createDataset() {
     ) as string[];
     const raw: string[] = [];
     const minify: string[] = [];
-    source.forEach((_code: string) => {
-      const js = ts2js(preprocess(_code));
-      if (!isNull(js)) {
-        let code = js.code;
-        /**
-         * 排除：
-         *  1. 超长的代码
-         *  2. 短代码
-         *  3. 单元测试代码
-         */
-        if (
-          // 非空
-          !isUndefined(code) &&
-          !isNull(code) &&
-          // 长度
-          code.length < 1500 &&
-          code.length > 50 &&
-          // 不是单元测试代码
-          !code.includes(" describe(") &&
-          !code.includes(" it(") &&
-          !code.includes(" expect(") &&
-          !code.includes(".toBe(") &&
-          !code.includes(".toEqual(")
-        ) {
-          const minifyCode = uglify(code);
-
-          if (!isNull(minifyCode) || minifyCode !== "") {
-            raw.push(code);
-            minify.push();
+    source.forEach((_code: string, index: number) => {
+      try {
+        const js = ts2js(preprocess(_code));
+        if (!isNull(js)) {
+          let code = js.code;
+          /**
+           * 排除：
+           *  1. 超长的代码
+           *  2. 短代码
+           *  3. 单元测试代码
+           */
+          if (
+            // 非空
+            !isUndefined(code) &&
+            !isNull(code) &&
+            // 长度
+            code.length < 1500 &&
+            code.length > 50 &&
+            // 不是单元测试代码
+            !code.includes(" describe(") &&
+            !code.includes(" it(") &&
+            !code.includes(" expect(") &&
+            !code.includes(".toBe(") &&
+            !code.includes(".toEqual(")
+          ) {
+            const minifyCode = uglify(code);
+            const sourceCode = AST.generate(AST.parse(code), {
+              comments: false,
+              compact: true,
+            });
+            if (!isNull(minifyCode) || minifyCode !== "") {
+              raw.push(sourceCode);
+              minify.push(minifyCode);
+            }
           }
         }
-      }
+        index % 100 == 0 &&
+          console.log(
+            colors.gray(
+              `当前进度：${files.indexOf(file)} / ${files.length} - ${(
+                (index / source.length) *
+                100
+              ).toFixed(2)}%`
+            )
+          );
+      } catch (e) {}
     });
     writeFileSync(
       path.join(targetDir, "raw", file),
