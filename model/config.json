@@ -1,0 +1,27 @@
+{
+  "data": {},
+  "encoder": {},
+  "decoder": {},
+  "pretrain": {
+    "gpu": "0",
+    "seed": 42,
+    "batch_size": "64",
+    "save_dir": "./checkpoints/pretrain/",
+    "vocab_file": "data/vocab.bpe10000/vocab"
+  },
+  "train": {
+    "seed": 42,
+    "gpu": "0",
+    "batch_size": 32,
+    "epochs": 10,
+    "lr": 1e-4,
+    "warm_up": 10000,
+    "weight_decay": 1e-5,
+    "restore": false,
+    "save_dir": "./checkpoints/"
+  },
+  "test": {
+    "batch_size": 64,
+    "beam_size": 5
+  }
+}
